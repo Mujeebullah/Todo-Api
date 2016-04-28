@@ -35,35 +35,25 @@ app.get( '/', function( req, res){
 //POST /todos
 
 app.post( '/todos', function( req, res ){
-
 	var body = __.pick( req.body, "description", "completed" );
 	if ( !__.isString( body.description ) ||  !__.isBoolean( body.completed ) || body.description.trim().length == 0 ){
-		return res.status( 404 ).send();		
+		return res.status( 404 ).send({ "error": "Something is wrong white post a todo item" });
 	}
 	body.id = todosId;
 	body.description = body.description.trim();		
 	todos.push( body );
 	todosId++;
 	res.json( body );
-	
-
 });
 
 // DELETE /todos/:id
 
-app.delete( '/todos/:id', function( req, res) {	
-	if( !__.isNumber( req.params.id  ) ){	
-		return res.status( 404 ).json({
-			"error": "Number is not given to delete a specific todo item"
-		});
-	}
-	var todosId	 = parseInt( req.params.id );	
+app.delete( '/todos/:id', function( req, res ) {	
+	var todosId	 = parseInt( req.params.id );
 	var matchedTodo = __.findWhere( todos, { id: todosId } );
 	if ( !matchedTodo ){
-		return res.status( 404 ).json({
-			"error": "no todo found with that id"
-		});
-	}	
+		return res.status( 404 ).json({ "error": "no todo found with that id" });
+	}
 	todos = __.without( todos, matchedTodo );
 	res.status( 200 ).json( matchedTodo );
 });
