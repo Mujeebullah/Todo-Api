@@ -1,5 +1,6 @@
 var express = require( 'express' );
 var bodyParser = require( 'body-parser' );
+var __ = require( 'underscore' );
 var app = express();
 
 var PORT = process.env.PORT || 3000;
@@ -38,15 +39,42 @@ app.get( '/', function( req, res){
 
 //POST /todos
 
-app.post( '/todos', function( req, res ){	
-	var body = req.body;
+app.post( '/todos', function( req, res ){
+
+	var body = __.pick( req.body, "description", "completed" );
+	if ( !__.isString( body.description ) ||  !__.isBoolean( body.completed ) || body.description.trim().length == 0 ){
+		return res.status( 404 ).send();		
+	}
 	body.id = todosId;
+	body.description = body.description.trim();		
 	todos.push( body );
-	console.log( todos );
-	res.json( body );
 	todosId++;
+	res.json( body );
+	
+
 });
 
+// DELETE /todos/:id
+
+app.delete( '/todos/:id', function( req, res) {	
+	var todosId	 = parseInt( req.params.id );
+	var matchedTodo;
+	if( !__.isNumber( todosId  ) ){
+		console.log( 'Not a number take place here! ');
+		return res.status( 404 ).send();
+	}	
+	todos.forEach( function( todo ){
+		if ( todo.id === todosId ){
+			matchedTodo = todo;
+			return;			
+		}
+	});
+
+	todos = __.without( todos.id, todosId );
+	res.status( 200 ).send(  )
+	
+
+});
 app.listen( PORT, function(){
 	console.log( 'Running Todo Api Server at ' + PORT );
 });
