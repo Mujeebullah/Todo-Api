@@ -19,13 +19,8 @@ app.get( '/todos', function( req, res){
 });
 
 app.get( '/todos/:id', function( req, res){
-	console.log( 'Asking for todo with id of '+ req.params.id );
-	var matchedTodo;
-	todos.forEach( function (todo){
-		if ( parseInt( req.params.id )  === todo.id ){
-			matchedTodo = todo;
-		}
-	});
+	var todosId = parseInt( req.params.id );
+	var matchedTodo = __.findWhere( todos, { id: todosId } );	
 	if ( matchedTodo ){
 		res.json( matchedTodo );
 	}else{
@@ -57,23 +52,20 @@ app.post( '/todos', function( req, res ){
 // DELETE /todos/:id
 
 app.delete( '/todos/:id', function( req, res) {	
-	var todosId	 = parseInt( req.params.id );
-	var matchedTodo;
-	if( !__.isNumber( todosId  ) ){
-		console.log( 'Not a number take place here! ');
-		return res.status( 404 ).send();
+	if( !__.isNumber( req.params.id  ) ){	
+		return res.status( 404 ).json({
+			"error": "Number is not given to delete a specific todo item"
+		});
+	}
+	var todosId	 = parseInt( req.params.id );	
+	var matchedTodo = __.findWhere( todos, { id: todosId } );
+	if ( !matchedTodo ){
+		return res.status( 404 ).json({
+			"error": "no todo found with that id"
+		});
 	}	
-	todos.forEach( function( todo ){
-		if ( todo.id === todosId ){
-			matchedTodo = todo;
-			return;			
-		}
-	});
-
-	todos = __.without( todos.id, todosId );
-	res.status( 200 ).send(  )
-	
-
+	todos = __.without( todos, matchedTodo );
+	res.status( 200 ).json( matchedTodo );
 });
 app.listen( PORT, function(){
 	console.log( 'Running Todo Api Server at ' + PORT );
