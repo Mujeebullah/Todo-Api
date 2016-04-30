@@ -14,8 +14,26 @@ var urlencodedParser = bodyParser.urlencoded( { extended: false } );
 
 app.use( jsonParser );
 
+app.get( '/', function( req, res){
+	res.send( 'Todo Api Root' );
+});
+
 app.get( '/todos', function( req, res){	
-	res.json( todos );	
+	var queryParams = req.query;
+	var filteredtodos = todos;
+	if ( queryParams.hasOwnProperty('completed')  && queryParams.completed === 'true' ){
+		filteredtodos = __.where( todos, { completed: true } );
+	}else if( queryParams.hasOwnProperty('completed')  && queryParams.completed === 'false' ){
+		filteredtodos = __.where( todos, { completed: false } );
+	}	
+
+	if ( queryParams.hasOwnProperty( 'q') && queryParams.q.length > 0 ){
+		filteredtodos = __.filter( filteredtodos, function(todo){
+			return todo.description.toLowerCase().indexOf( queryParams.q.toLowerCase() ) > -1;
+		});
+	}
+	res.json( filteredtodos );
+
 });
 
 app.get( '/todos/:id', function( req, res){
@@ -26,10 +44,6 @@ app.get( '/todos/:id', function( req, res){
 	}else{
 		res.status(404).send();
 	}
-});
-
-app.get( '/', function( req, res){
-	res.send( 'Todo Api Root' );
 });
 
 //POST /todos
